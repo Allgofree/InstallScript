@@ -55,6 +55,11 @@ WKHTMLTOX_X32=https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.
 echo -e "\n---- Update Server ----"
 #sudo apt-get update
 #sudo apt-get upgrade -y
+#install GPG - https://www.cyberciti.biz/faq/installing-gnupg2-on-debian-linux-to-fix-bash-gpg-command-not-found-error/
+
+sudo sh -c 'apt update && apt upgrade'
+sudo apt-cache search '^gnupg?'
+sudo apt install gnupg2
 
 #--------------------------------------------------
 # Install PostgreSQL Server
@@ -142,8 +147,8 @@ if [ $IS_ENTERPRISE = "True" ]; then
 fi
 
 echo -e "\n---- Create custom module directory ----"
-sudo su $OE_USER -c "mkdir $OE_HOME/spotmeupalpha"
-sudo su $OE_USER -c "mkdir $OE_HOME/spotmeupalha/addons"
+sudo su $OE_USER -c "mkdir $OE_HOME/spotmeup"
+sudo su $OE_USER -c "mkdir $OE_HOME/spotmeup/addons"
 
 echo -e "\n---- Setting permissions on home folder ----"
 sudo chown -R $OE_USER:$OE_USER $OE_HOME/*
@@ -178,6 +183,10 @@ echo -e "* Create startup file"
 sudo su root -c "echo '#!/bin/sh' >> $OE_HOME_EXT/start.sh"
 sudo su root -c "echo 'sudo -u $OE_USER $OE_HOME_EXT/odoo-bin --config=/etc/${OE_CONFIG}.conf' >> $OE_HOME_EXT/start.sh"
 sudo chmod 755 $OE_HOME_EXT/start.sh
+
+#install odoo18 
+cd $OE_HOME_EXT/
+sudo su $OE_USER $OE_HOME_EXT/setup/debinstall.sh
 
 #--------------------------------------------------
 # Adding ODOO as a deamon (initscript)
