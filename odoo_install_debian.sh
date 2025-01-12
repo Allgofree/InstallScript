@@ -39,6 +39,10 @@ OE_CONFIG="${OE_USER}-server"
 WEBSITE_NAME="SpotMeUp"
 # Set the default Odoo longpolling port (you still have to use -c /etc/odoo-server.conf for example to use this.)
 LONGPOLLING_PORT="8072"
+# Set to "True" to install certbot and have ssl enabled, "False" to use http
+ENABLE_SSL="True"
+# Provide Email to register ssl certificate
+ADMIN_EMAIL="odoo@example.com"
 
 ##
 ###  WKHTMLTOPDF download links
@@ -355,6 +359,32 @@ EOF
 else
   echo "Nginx isn't installed due to choice of the user!"
 fi
+
+#--------------------------------------------------
+# Enable ssl with certbot
+#--------------------------------------------------
+
+if [ $INSTALL_NGINX = "True" ] && [ $ENABLE_SSL = "True" ] && [ $ADMIN_EMAIL != "odoo@example.com" ]  && [ $WEBSITE_NAME != "_" ];then
+  sudo apt-get update -y
+  sudo apt install snapd -y
+  sudo snap install core; snap refresh core
+  sudo snap install --classic certbot
+  sudo apt-get install python3-certbot-nginx -y
+  sudo certbot --nginx -d $WEBSITE_NAME --noninteractive --agree-tos --email $ADMIN_EMAIL --redirect
+  sudo service nginx reload
+  echo "SSL/HTTPS is enabled!"
+else
+  echo "SSL/HTTPS isn't enabled due to choice of the user or because of a misconfiguration!"
+  if $ADMIN_EMAIL = "odoo@example.com";then 
+    echo "Certbot does not support registering odoo@example.com. You should use real e-mail address."
+  fi
+  if $WEBSITE_NAME = "_";then
+    echo "Website name is set as _. Cannot obtain SSL Certificate for _. You should use real website address."
+  fi
+fi
+
+
+
 echo -e "* Starting Odoo Service"
 sudo su root -c "/etc/init.d/$OE_CONFIG start"
 echo "-----------------------------------------------------------"
